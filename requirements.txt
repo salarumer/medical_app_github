@@ -1,9 +1,8 @@
 flask==3.0.0
 flask-cors==4.0.0
 elasticsearch==8.11.0
-sentence-transformers==2.2.2
+sentence-transformers>=2.7.0
 torch>=2.5.0
-numpy==1.24.3
-langchain==0.1.0
-pandas==2.0.3
+numpy>=1.26.0
+transformers>=4.36.0
 gunicorn==21.2.0
