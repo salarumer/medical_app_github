@@ -28,7 +28,7 @@ def initialize_search_engine():
         # Connect to Elasticsearch
         search_engine = ElasticsearchSearchEngine(
             model_name="abhinand/MedEmbed-large-v0.1",
-            es_host="http://localhost:9200",
+            es_host="http://35.225.123.242:9200",
             index_name="textbook_search",
             create_index=False  # Don't rebuild unless needed
         )
