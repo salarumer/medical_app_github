@@ -37,7 +37,7 @@ def initialize_search_engine():
         # Get Elasticsearch host from environment or default
         es_host = os.environ.get('ELASTICSEARCH_HOST', 'http://35.225.123.242:9200')
         
-        logger.info(f"🔌 Connecting to Elasticsearch at {es_host}")
+        logger.info(f" Connecting to Elasticsearch at {es_host}")
         
         # Connect to Elasticsearch
         es_client = Elasticsearch([es_host], request_timeout=60, max_retries=3)
@@ -45,30 +45,30 @@ def initialize_search_engine():
         if not es_client.ping():
             raise ConnectionError(f"Could not connect to Elasticsearch at {es_host}")
         
-        logger.info("✅ Connected to Elasticsearch!")
+        logger.info(" Connected to Elasticsearch!")
         
         # Set HuggingFace token if available (to avoid rate limits)
         hf_token = os.environ.get('HF_TOKEN')
         if hf_token:
-            logger.info("🔑 Using HuggingFace token for authenticated download")
+            logger.info(" Using HuggingFace token for authenticated download")
             os.environ['HUGGING_FACE_HUB_TOKEN'] = hf_token
         else:
-            logger.warning("⚠️  No HF_TOKEN found - may hit rate limits")
+            logger.warning("  No HF_TOKEN found - may hit rate limits")
         
         # Load sentence transformer model
-        logger.info("🤖 Loading embedding model... This may take 2-3 minutes...")
+        logger.info(" Loading embedding model... This may take 2-3 minutes...")
         model = SentenceTransformer("abhinand/MedEmbed-large-v0.1")
         
-        logger.info("✅ Model loaded successfully!")
+        logger.info(" Model loaded successfully!")
         
         # Check index
         count = es_client.count(index="textbook_search")['count']
-        logger.info(f"📚 Index contains {count} documents")
+        logger.info(f" Index contains {count} documents")
         
         return True
         
     except Exception as e:
-        logger.error(f"❌ Failed to initialize: {e}", exc_info=True)
+        logger.error(f" Failed to initialize: {e}", exc_info=True)
         return False
 
 
@@ -151,7 +151,7 @@ def home():
 
 @app.route('/search', methods=['POST'])
 def search():
-    """Search endpoint"""
+    """Simple search endpoint - question only"""
     if es_client is None or model is None:
         return jsonify({
             'status': 'error',
@@ -182,11 +182,11 @@ def search():
                 'message': 'top_k must be an integer between 1 and 20'
             }), 400
         
-        logger.info(f"🔍 Searching for: '{query}' (top_k={top_k})")
+        logger.info(f"Simple search: '{query[:100]}...' (top_k={top_k})")
         
         results = search_elasticsearch(query, top_k)
         
-        logger.info(f"✅ Found {len(results)} results")
+        logger.info(f" Found {len(results)} results")
         
         return jsonify({
             'status': 'success',
@@ -196,10 +196,144 @@ def search():
         })
     
     except Exception as e:
-        logger.error(f"❌ Search error: {e}", exc_info=True)
+        logger.error(f" Search error: {e}", exc_info=True)
         return jsonify({
             'status': 'error',
             'message': f'Search failed: {str(e)}'
+        }), 500
+
+
+@app.route('/search/enhanced', methods=['POST'])
+def search_enhanced():
+    """Enhanced search endpoint - Question + Answer + Explanation"""
+    if es_client is None or model is None:
+        return jsonify({
+            'status': 'error',
+            'message': 'Search engine not initialized'
+        }), 500
+    
+    try:
+        data = request.get_json()
+        
+        if not data or 'question' not in data:
+            return jsonify({
+                'status': 'error',
+                'message': 'Missing required field: question'
+            }), 400
+        
+        question = data['question']
+        answer = data.get('answer', '')
+        explanation = data.get('explanation', '')
+        top_k = data.get('top_k', 5)
+        
+        if not question or not question.strip():
+            return jsonify({
+                'status': 'error',
+                'message': 'Question cannot be empty'
+            }), 400
+        
+        if not isinstance(top_k, int) or top_k < 1 or top_k > 20:
+            return jsonify({
+                'status': 'error',
+                'message': 'top_k must be an integer between 1 and 20'
+            }), 400
+        
+        # Construct enhanced query (Q+A+E)
+        query_parts = [question]
+        
+        if answer and answer.strip():
+            query_parts.append(f"Answer: {answer}")
+        
+        if explanation and explanation.strip():
+            # Clean and use first 200 chars of explanation
+            clean_explanation = explanation.replace("Correct Answer:", "").strip()
+            if clean_explanation:
+                query_parts.append(clean_explanation[:200])
+        
+        enhanced_query = " ".join(query_parts)
+        
+        logger.info(f" Enhanced search (Q+A+E): {len(enhanced_query)} chars, top_k={top_k}")
+        logger.info(f"   Question: {question[:100]}...")
+        if answer:
+            logger.info(f"   Answer: {answer[:100]}...")
+        if explanation:
+            logger.info(f"   Explanation: {explanation[:100]}...")
+        
+        # Search with enhanced query
+        results = search_elasticsearch(enhanced_query, top_k)
+        
+        logger.info(f" Found {len(results)} results")
+        
+        return jsonify({
+            'status': 'success',
+            'question': question,
+            'answer': answer if answer else None,
+            'explanation': explanation if explanation else None,
+            'query_used': enhanced_query,
+            'query_length': len(enhanced_query),
+            'num_results': len(results),
+            'results': results
+        })
+    
+    except Exception as e:
+        logger.error(f" Enhanced search error: {e}", exc_info=True)
+        return jsonify({
+            'status': 'error',
+            'message': f'Enhanced search failed: {str(e)}'
+        }), 500
+
+
+@app.route('/search/qa', methods=['POST'])
+def search_qa():
+    """Q&A search endpoint - Question + optional Answer"""
+    if es_client is None or model is None:
+        return jsonify({
+            'status': 'error',
+            'message': 'Search engine not initialized'
+        }), 500
+    
+    try:
+        data = request.get_json()
+        
+        if not data or 'question' not in data:
+            return jsonify({
+                'status': 'error',
+                'message': 'Missing required field: question'
+            }), 400
+        
+        question = data['question']
+        answer = data.get('answer', '')
+        top_k = data.get('top_k', 5)
+        
+        if not question or not question.strip():
+            return jsonify({
+                'status': 'error',
+                'message': 'Question cannot be empty'
+            }), 400
+        
+        logger.info(f" Q&A search: '{question[:100]}...' (top_k={top_k})")
+        if answer:
+            logger.info(f"   Answer: {answer[:100]}...")
+        
+        # Search using the question (optionally could combine with answer)
+        results = search_elasticsearch(question, top_k)
+        
+        logger.info(f" Found {len(results)} results")
+        
+        return jsonify({
+            'status': 'success',
+            'question': question,
+            'answer': answer if answer else None,
+            'num_sources': len(results),
+            'sources': results,
+            'primary_source': results[0] if results else None
+        })
+    
+    except Exception as e:
+        logger.error(f" Q&A search error: {e}", exc_info=True)
+        return jsonify({
+            'status': 'error',
+            'message': f'Q&A search failed: {str(e)}'
         }), 500
 
 
@@ -273,14 +407,14 @@ def get_stats():
 
 # Initialize on startup (for gunicorn with --preload)
 logger.info("="*60)
-logger.info("🏥 Medical Textbook Retrieval API - Starting")
+logger.info(" Medical Textbook Retrieval API - Starting")
 logger.info("="*60)
 
 if not initialize_search_engine():
-    logger.error("❌ Failed to initialize search engine")
+    logger.error(" Failed to initialize search engine")
 else:
-    logger.info("✅ Search engine initialized successfully")
-    logger.info("📍 API is ready to serve requests")
+    logger.info(" Search engine initialized successfully")
+    logger.info(" API is ready to serve requests")
 
 
 if __name__ == '__main__':
