@@ -47,6 +47,14 @@ def initialize_search_engine():
         
         logger.info("✅ Connected to Elasticsearch!")
         
+        # Set HuggingFace token if available (to avoid rate limits)
+        hf_token = os.environ.get('HF_TOKEN')
+        if hf_token:
+            logger.info("🔑 Using HuggingFace token for authenticated download")
+            os.environ['HUGGING_FACE_HUB_TOKEN'] = hf_token
+        else:
+            logger.warning("⚠️  No HF_TOKEN found - may hit rate limits")
+        
         # Load sentence transformer model
         logger.info("🤖 Loading embedding model... This may take 2-3 minutes...")
         model = SentenceTransformer("abhinand/MedEmbed-large-v0.1")
