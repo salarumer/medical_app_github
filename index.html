@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Textbook Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status.connected {
+            background: #10b981;
+            color: white;
+        }
+
+        .status.disconnected {
+            background: #ef4444;
+            color: white;
+        }
+
+        .search-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .input-row .input-group {
+            flex: 1;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .results {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .results h2 {
+            color: #374151;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .result-item {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .result-rank {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .result-score {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .result-source {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .source-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .source-detail {
+            color: #6b7280;
+            font-size: 14px;
+            margin: 3px 0;
+        }
+
+        .result-content {
+            color: #374151;
+            line-height: 1.6;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
+
+        .stats {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Medical Textbook Search</h1>
+            <p style="color: #6b7280; margin: 10px 0;">Semantic search across emergency medicine textbooks</p>
+            <span class="status disconnected" id="status">Checking connection...</span>
+        </div>
+
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stat-item">
+                <div class="stat-value" id="stat-docs">-</div>
+                <div class="stat-label">Documents</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="stat-books">-</div>
+                <div class="stat-label">Textbooks</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="stat-model">-</div>
+                <div class="stat-label">Embedding Model</div>
+            </div>
+        </div>
+
+        <div class="search-box">
+            <h2 style="margin-bottom: 20px; color: #374151;">Search Mode</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="margin-right: 20px;">
+                    <input type="radio" name="searchMode" value="simple" checked onchange="toggleSearchMode()"> 
+                    Simple Search
+                </label>
+                <label>
+                    <input type="radio" name="searchMode" value="qa" onchange="toggleSearchMode()"> 
+                    Question & Answer
+                </label>
+            </div>
+
+            <div id="simpleSearch">
+                <div class="input-group">
+                    <label for="query">Search Query</label>
+                    <textarea id="query" placeholder="Enter your medical question here..."></textarea>
+                </div>
+            </div>
+
+            <div id="qaSearch" style="display: none;">
+                <div class="input-group">
+                    <label for="question">Question</label>
+                    <textarea id="question" placeholder="Enter the medical question..."></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="answer">Answer (Optional)</label>
+                    <input type="text" id="answer" placeholder="Enter the answer if available...">
+                </div>
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="topK">Number of Results</label>
+                    <input type="number" id="topK" value="5" min="1" max="20">
+                </div>
+            </div>
+
+            <button onclick="performSearch()" id="searchBtn">🔍 Search</button>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">
+            <p>🔄 Searching textbooks...</p>
+        </div>
+
+        <div id="results" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://medical-rag-api-807836725103.us-central1.run.app';
+
+        // Check API connection on load
+        async function checkConnection() {
+            try {
+                const response = await fetch(`${API_URL}/`);
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    document.getElementById('status').textContent = '✓ Connected';
+                    document.getElementById('status').className = 'status connected';
+                    
+                    // Show stats
+                    document.getElementById('stats').style.display = 'grid';
+                    document.getElementById('stat-docs').textContent = data.statistics.total_documents;
+                    document.getElementById('stat-books').textContent = data.statistics.total_textbooks || '2';
+                    document.getElementById('stat-model').textContent = 'MedEmbed';
+                }
+            } catch (error) {
+                document.getElementById('status').textContent = '✗ API Not Running';
+                document.getElementById('status').className = 'status disconnected';
+            }
+        }
+
+        function toggleSearchMode() {
+            const mode = document.querySelector('input[name="searchMode"]:checked').value;
+            
+            if (mode === 'simple') {
+                document.getElementById('simpleSearch').style.display = 'block';
+                document.getElementById('qaSearch').style.display = 'none';
+            } else {
+                document.getElementById('simpleSearch').style.display = 'none';
+                document.getElementById('qaSearch').style.display = 'block';
+            }
+        }
+
+        async function performSearch() {
+            const mode = document.querySelector('input[name="searchMode"]:checked').value;
+            const topK = parseInt(document.getElementById('topK').value);
+            
+            let endpoint, payload;
+            
+            if (mode === 'simple') {
+                const query = document.getElementById('query').value.trim();
+                if (!query) {
+                    alert('Please enter a search query');
+                    return;
+                }
+                endpoint = '/search';
+                payload = { query, top_k: topK };
+            } else {
+                const question = document.getElementById('question').value.trim();
+                if (!question) {
+                    alert('Please enter a question');
+                    return;
+                }
+                const answer = document.getElementById('answer').value.trim();
+                endpoint = '/search/qa';
+                payload = { question, answer, top_k: topK };
+            }
+
+            // Show loading
+            document.getElementById('searchBtn').disabled = true;
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    displayResults(data, mode);
+                } else {
+                    displayError(data.message);
+                }
+            } catch (error) {
+                displayError('Failed to connect to API: ' + error.message);
+            } finally {
+                document.getElementById('searchBtn').disabled = false;
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function displayResults(data, mode) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+
+            const results = mode === 'qa' ? data.sources : data.results;
+            const query = mode === 'qa' ? data.question : data.query;
+
+            let html = `
+                <h2>Search Results</h2>
+                <p style="color: #6b7280; margin-bottom: 20px;">
+                    Found ${results.length} results for: "<strong>${query}</strong>"
+                </p>
+            `;
+
+            if (results.length === 0) {
+                html += '<div class="empty">No results found. Try a different query.</div>';
+            } else {
+                results.forEach(result => {
+                    html += `
+                        <div class="result-item">
+                            <div class="result-header">
+                                <span class="result-rank">Rank #${result.rank}</span>
+                                <span class="result-score">Score: ${result.relevance_score.toFixed(3)}</span>
+                            </div>
+                            
+                            <div class="result-source">
+                                <div class="source-title">📚 ${result.source.textbook}</div>
+                                <div class="source-detail">📖 Chapter: ${result.source.chapter}</div>
+                                <div class="source-detail">📄 Page: ${result.source.page}</div>
+                                <div class="source-detail">📑 Chapter Range: Pages ${result.source.chapter_range}</div>
+                            </div>
+                            
+                            <div class="result-content">
+                                <strong>Content Preview:</strong><br>
+                                ${result.content_preview}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+
+        function displayError(message) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = `
+                <div class="error">
+                    <strong>Error:</strong> ${message}
+                </div>
+            `;
+        }
+
+        // Check connection on page load
+        checkConnection();
+    </script>
+</body>
+</html>
