@@ -245,6 +245,25 @@
             color: #6b7280;
             margin-top: 5px;
         }
+
+        .mode-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .mode-badge.enhanced {
+            background: #10b981;
+            color: white;
+        }
+
+        .mode-badge.simple {
+            background: #3b82f6;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -278,12 +297,17 @@
                     <input type="radio" name="searchMode" value="simple" checked onchange="toggleSearchMode()"> 
                     Simple Search
                 </label>
+                <label style="margin-right: 20px;">
+                    <input type="radio" name="searchMode" value="enhanced" onchange="toggleSearchMode()"> 
+                    Enhanced (Q+A+E) 🔥
+                </label>
                 <label>
                     <input type="radio" name="searchMode" value="qa" onchange="toggleSearchMode()"> 
                     Question & Answer
                 </label>
             </div>
 
+            <!-- Simple Search -->
             <div id="simpleSearch">
                 <div class="input-group">
                     <label for="query">Search Query</label>
@@ -291,6 +315,23 @@
                 </div>
             </div>
 
+            <!-- Enhanced Search (Q+A+E) -->
+            <div id="enhancedSearch" style="display: none;">
+                <div class="input-group">
+                    <label for="question-enhanced">Question</label>
+                    <textarea id="question-enhanced" placeholder="Enter the exam question..."></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="answer-enhanced">Answer</label>
+                    <textarea id="answer-enhanced" placeholder="Enter the correct answer..."></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="explanation-enhanced">Explanation</label>
+                    <textarea id="explanation-enhanced" placeholder="Enter the explanation for why this is the correct answer..."></textarea>
+                </div>
+            </div>
+
+            <!-- Q&A Search -->
             <div id="qaSearch" style="display: none;">
                 <div class="input-group">
                     <label for="question">Question</label>
@@ -335,7 +376,7 @@
                     // Show stats
                     document.getElementById('stats').style.display = 'grid';
                     document.getElementById('stat-docs').textContent = data.statistics.total_documents;
-                    document.getElementById('stat-books').textContent = data.statistics.total_textbooks || '2';
+                    document.getElementById('stat-books').textContent = '2';
                     document.getElementById('stat-model').textContent = 'MedEmbed';
                 }
             } catch (error) {
@@ -347,11 +388,15 @@
         function toggleSearchMode() {
             const mode = document.querySelector('input[name="searchMode"]:checked').value;
             
+            document.getElementById('simpleSearch').style.display = 'none';
+            document.getElementById('enhancedSearch').style.display = 'none';
+            document.getElementById('qaSearch').style.display = 'none';
+            
             if (mode === 'simple') {
                 document.getElementById('simpleSearch').style.display = 'block';
-                document.getElementById('qaSearch').style.display = 'none';
+            } else if (mode === 'enhanced') {
+                document.getElementById('enhancedSearch').style.display = 'block';
             } else {
-                document.getElementById('simpleSearch').style.display = 'none';
                 document.getElementById('qaSearch').style.display = 'block';
             }
         }
@@ -370,6 +415,23 @@
                 }
                 endpoint = '/search';
                 payload = { query, top_k: topK };
+            } else if (mode === 'enhanced') {
+                const question = document.getElementById('question-enhanced').value.trim();
+                const answer = document.getElementById('answer-enhanced').value.trim();
+                const explanation = document.getElementById('explanation-enhanced').value.trim();
+                
+                if (!question) {
+                    alert('Please enter a question');
+                    return;
+                }
+                
+                endpoint = '/search/enhanced';
+                payload = { 
+                    question, 
+                    answer, 
+                    explanation, 
+                    top_k: topK 
+                };
             } else {
                 const question = document.getElementById('question').value.trim();
                 if (!question) {
@@ -414,15 +476,40 @@
             const resultsDiv = document.getElementById('results');
             resultsDiv.style.display = 'block';
 
-            const results = mode === 'qa' ? data.sources : data.results;
-            const query = mode === 'qa' ? data.question : data.query;
+            const results = data.sources || data.results;
+            const query = data.question || data.query;
+
+            let modeBadge = '';
+            if (mode === 'enhanced') {
+                modeBadge = '<span class="mode-badge enhanced">Enhanced Q+A+E Search</span>';
+            } else if (mode === 'simple') {
+                modeBadge = '<span class="mode-badge simple">Simple Search</span>';
+            }
 
             let html = `
-                <h2>Search Results</h2>
+                <h2>Search Results ${modeBadge}</h2>
                 <p style="color: #6b7280; margin-bottom: 20px;">
                     Found ${results.length} results for: "<strong>${query}</strong>"
                 </p>
             `;
+
+            // Show Q+A+E details for enhanced mode
+            if (mode === 'enhanced' && data.answer) {
+                html += `
+                    <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #0ea5e9;">
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #0369a1;">📝 Answer:</strong>
+                            <p style="margin: 5px 0; color: #374151;">${data.answer}</p>
+                        </div>
+                        ${data.explanation ? `
+                        <div>
+                            <strong style="color: #0369a1;">💡 Explanation:</strong>
+                            <p style="margin: 5px 0; color: #374151;">${data.explanation}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
 
             if (results.length === 0) {
                 html += '<div class="empty">No results found. Try a different query.</div>';
