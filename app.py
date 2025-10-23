@@ -1,7 +1,6 @@
 """
-Flask API for Medical Textbook Retrieval - Enhanced with Gemini Text Cleaning
-==============================================================================
-Replace your existing app.py with this file
+Flask API for Medical Textbook Retrieval - Cloud Version
+========================================================
 """
 
 from flask import Flask, request, jsonify
@@ -12,7 +11,7 @@ import logging
 from typing import List, Dict, Any
 from elasticsearch import Elasticsearch
 from sentence_transformers import SentenceTransformer
-from google import generativeai as genai
+import google.generativeai as genai
 
 # Configure logging for Cloud Run
 logging.basicConfig(
@@ -50,7 +49,7 @@ def initialize_search_engine():
         
         logger.info("✅ Connected to Elasticsearch!")
         
-        # Set HuggingFace token if available
+        # Set HuggingFace token if available (to avoid rate limits)
         hf_token = os.environ.get('HF_TOKEN')
         if hf_token:
             logger.info("🔑 Using HuggingFace token for authenticated download")
@@ -62,15 +61,15 @@ def initialize_search_engine():
         logger.info("🤖 Loading embedding model... This may take 2-3 minutes...")
         model = SentenceTransformer("abhinand/MedEmbed-large-v0.1")
         
-        logger.info("✅ Embedding model loaded successfully!")
+        logger.info("✅ Model loaded successfully!")
         
-        # Initialize Gemini for text cleaning
+        # Initialize Gemini
         gemini_api_key = os.environ.get('GEMINI_API_KEY')
         if gemini_api_key:
-            logger.info("🤖 Initializing Gemini 2.5 Pro for text cleaning...")
+            logger.info("🔮 Initializing Gemini API...")
             genai.configure(api_key=gemini_api_key)
-            gemini_model = genai.GenerativeModel('gemini-2.5-pro')
-            logger.info("✅ Gemini initialized successfully!")
+            gemini_model = genai.GenerativeModel('gemini-2.0-flash-exp')
+            logger.info("✅ Gemini initialized!")
         else:
             logger.warning("⚠️  No GEMINI_API_KEY found - text cleaning disabled")
         
@@ -85,96 +84,32 @@ def initialize_search_engine():
         return False
 
 
-def clean_text_with_gemini(raw_text: str, textbook_name: str, chapter: str) -> Dict[str, str]:
-    """
-    Clean and format retrieved textbook chunks using Gemini
-    
-    Args:
-        raw_text: Raw text from Elasticsearch
-        textbook_name: Name of the textbook
-        chapter: Chapter name
-    
-    Returns:
-        Dict with cleaned_text and preview
-    """
+def clean_text_with_gemini(text: str) -> str:
+    """Clean and format text using Gemini API"""
     if not gemini_model:
-        # If Gemini not available, return original text
-        return {
-            'cleaned_text': raw_text,
-            'preview': raw_text[:300] + "..." if len(raw_text) > 300 else raw_text
-        }
+        return text  # Return original if Gemini not available
     
     try:
-        # Construct prompt for Gemini
-        prompt = f"""You are a medical text formatting assistant. Your task is to clean and format a chunk of text extracted from a medical textbook.
+        prompt = f"""Clean and format this medical text for better readability. Remove unnecessary newlines, fix spacing, and make it flow naturally as prose. Keep all medical information intact.
 
-**Source Information:**
-- Textbook: {textbook_name}
-- Chapter: {chapter}
+Text to clean:
+{text}
 
-**Raw Text Chunk:**
-{raw_text}
+Return only the cleaned text without any additional commentary."""
 
-**Your Task:**
-1. If the text starts with an incomplete sentence fragment, DELETE it completely - start from the first COMPLETE sentence
-2. If the text ends with an incomplete sentence fragment, DELETE it completely - end at the last COMPLETE sentence
-3. Replace "\\n" with actual line breaks for readability
-4. Remove random page numbers, headers, footers that interrupt the text
-5. Fix obvious OCR errors (like "gl aucoma" → "glaucoma")
-6. Preserve ALL medical terminology, drug names, dosages, measurements, and clinical information EXACTLY as written
-
-**CRITICAL RULES:**
-- DO NOT add any text that isn't in the original
-- DO NOT try to complete incomplete sentences
-- DO NOT infer or guess what came before or after
-- DO NOT summarize or paraphrase
-- DO NOT remove any complete sentences or clinical information
-- DO NOT change drug dosages, measurements, or medical terms
-- ONLY remove incomplete sentence fragments at the start/end
-- ONLY fix obvious formatting issues
-
-**Example:**
-Input: "historical details to the treating physician.\\nPhysical Examination. The pain in acute mesenteric ischemia is\\ntypically described as being out of proportion..."
-
-Output: "Physical Examination. The pain in acute mesenteric ischemia is typically described as being out of proportion..."
-
-(Notice: removed incomplete fragment "historical details to the treating physician." and cleaned \\n)
-
-Return ONLY the cleaned text, no explanations or additional commentary.
-"""
-
-        # Call Gemini to clean the text
-        response = gemini_model.generate_content(
-            prompt,
-            generation_config={
-                'temperature': 0.1,  # Low temperature for consistent cleaning
-                'max_output_tokens': 2048,
-            }
-        )
+        response = gemini_model.generate_content(prompt)
+        cleaned = response.text.strip()
         
-        cleaned_text = response.text.strip()
-        
-        # Create a preview (first 300 chars)
-        preview = cleaned_text[:300] + "..." if len(cleaned_text) > 300 else cleaned_text
-        
-        logger.info(f"✅ Text cleaned with Gemini (original: {len(raw_text)} chars → cleaned: {len(cleaned_text)} chars)")
-        
-        return {
-            'cleaned_text': cleaned_text,
-            'preview': preview
-        }
+        logger.info(f"✨ Cleaned text: {len(text)} → {len(cleaned)} chars")
+        return cleaned
         
     except Exception as e:
-        logger.error(f"❌ Error cleaning text with Gemini: {e}")
-        # Fallback to original text if Gemini fails
-        return {
-            'cleaned_text': raw_text,
-            'preview': raw_text[:300] + "..." if len(raw_text) > 300 else raw_text
-        }
+        logger.error(f"❌ Gemini cleaning error: {e}")
+        return text  # Return original on error
 
 
-def search_elasticsearch(query: str, top_k: int = 5, clean_with_gemini: bool = True) -> List[Dict[str, Any]]:
-    """Search Elasticsearch for relevant documents and optionally clean with Gemini"""
+def search_elasticsearch(query: str, top_k: int = 5, clean_text: bool = True) -> List[Dict[str, Any]]:
+    """Search Elasticsearch for relevant documents"""
     
     # Generate query embedding
     query_embedding = model.encode([query])[0]
@@ -201,27 +136,25 @@ def search_elasticsearch(query: str, top_k: int = 5, clean_with_gemini: bool = T
     for i, hit in enumerate(response['hits']['hits'], 1):
         source = hit['_source']
         metadata = source['metadata']
-        raw_content = source['content']
         
-        # Clean text with Gemini if enabled
-        if clean_with_gemini:
-            cleaned = clean_text_with_gemini(
-                raw_content, 
-                metadata.get('textbook', 'Unknown'),
-                metadata.get('chapter', 'Unknown')
-            )
-            content = cleaned['cleaned_text']
-            preview = cleaned['preview']
-        else:
-            content = raw_content
-            preview = raw_content[:300] + "..." if len(raw_content) > 300 else raw_content
+        # Get content
+        original_content = source['content']
+        full_content = original_content
+        
+        # Clean content if requested and Gemini is available
+        if clean_text and gemini_model:
+            full_content = clean_text_with_gemini(original_content)
+        
+        # Create preview from cleaned content
+        content_preview = full_content[:300] + "..." if len(full_content) > 300 else full_content
         
         result = {
             'rank': i,
             'relevance_score': float(hit['_score']),
-            'content_preview': preview,
-            'full_content': content,
-            'raw_content': raw_content,  # Include raw for reference
+            'content_preview': content_preview,
+            'full_content': full_content,
+            'original_content': original_content,  # Keep original for reference
+            'cleaned': clean_text and gemini_model is not None,
             'source': {
                 'textbook': metadata.get('textbook', 'Unknown'),
                 'textbook_id': metadata.get('textbook_id', 'unknown'),
@@ -229,8 +162,7 @@ def search_elasticsearch(query: str, top_k: int = 5, clean_with_gemini: bool = T
                 'page': metadata.get('page', 'Unknown'),
                 'chapter_range': f"{metadata.get('chapter_start_page', '?')}-{metadata.get('chapter_end_page', '?')}"
             },
-            'citation': f"{metadata.get('textbook', 'Unknown')}, {metadata.get('chapter', 'Unknown')}, page {metadata.get('page', 'Unknown')}",
-            'cleaned_with_gemini': clean_with_gemini and gemini_model is not None
+            'citation': f"{metadata.get('textbook', 'Unknown')}, {metadata.get('chapter', 'Unknown')}, page {metadata.get('page', 'Unknown')}"
         }
         results.append(result)
     
@@ -251,12 +183,14 @@ def home():
         
         return jsonify({
             'status': 'healthy',
-            'message': 'Medical Textbook Retrieval API - Enhanced with Gemini',
-            'version': '2.0.0',
+            'message': 'Medical Textbook Retrieval API',
+            'version': '1.0.0',
+            'features': {
+                'text_cleaning': gemini_model is not None
+            },
             'statistics': {
                 'total_documents': count,
-                'embedding_model': 'abhinand/MedEmbed-large-v0.1',
-                'text_cleaning': 'Gemini 2.5 Pro' if gemini_model else 'Disabled'
+                'embedding_model': 'abhinand/MedEmbed-large-v0.1'
             }
         })
     except Exception as e:
@@ -269,7 +203,7 @@ def home():
 
 @app.route('/search', methods=['POST'])
 def search():
-    """Search endpoint with optional Gemini text cleaning"""
+    """Search endpoint"""
     if es_client is None or model is None:
         return jsonify({
             'status': 'error',
@@ -287,7 +221,7 @@ def search():
         
         query = data['query']
         top_k = data.get('top_k', 5)
-        clean_text = data.get('clean_text', True)  # Default to cleaning
+        clean_text = data.get('clean_text', True)  # Enable cleaning by default
         
         if not query or not query.strip():
             return jsonify({
@@ -301,9 +235,9 @@ def search():
                 'message': 'top_k must be an integer between 1 and 20'
             }), 400
         
-        logger.info(f"🔍 Searching for: '{query}' (top_k={top_k}, clean_text={clean_text})")
+        logger.info(f"🔍 Searching for: '{query}' (top_k={top_k}, clean={clean_text})")
         
-        results = search_elasticsearch(query, top_k, clean_with_gemini=clean_text)
+        results = search_elasticsearch(query, top_k, clean_text)
         
         logger.info(f"✅ Found {len(results)} results")
         
@@ -311,8 +245,8 @@ def search():
             'status': 'success',
             'query': query,
             'num_results': len(results),
-            'results': results,
-            'text_cleaned': clean_text and gemini_model is not None
+            'text_cleaned': gemini_model is not None and clean_text,
+            'results': results
         })
     
     except Exception as e:
@@ -325,7 +259,7 @@ def search():
 
 @app.route('/search/enhanced', methods=['POST'])
 def search_enhanced():
-    """Enhanced search endpoint - Question + Answer + Explanation with Gemini cleaning"""
+    """Enhanced search endpoint - Question + Answer + Explanation"""
     if es_client is None or model is None:
         return jsonify({
             'status': 'error',
@@ -345,7 +279,7 @@ def search_enhanced():
         answer = data.get('answer', '')
         explanation = data.get('explanation', '')
         top_k = data.get('top_k', 5)
-        clean_text = data.get('clean_text', True)  # Default to cleaning
+        clean_text = data.get('clean_text', True)
         
         if not question or not question.strip():
             return jsonify({
@@ -372,10 +306,10 @@ def search_enhanced():
         
         enhanced_query = " ".join(query_parts)
         
-        logger.info(f"🔍 Enhanced search (Q+A+E): {len(enhanced_query)} chars, top_k={top_k}, clean_text={clean_text}")
+        logger.info(f"🔍 Enhanced search (Q+A+E): {len(enhanced_query)} chars, top_k={top_k}, clean={clean_text}")
         
         # Search with enhanced query
-        results = search_elasticsearch(enhanced_query, top_k, clean_with_gemini=clean_text)
+        results = search_elasticsearch(enhanced_query, top_k, clean_text)
         
         logger.info(f"✅ Found {len(results)} results")
         
@@ -386,8 +320,8 @@ def search_enhanced():
             'explanation': explanation if explanation else None,
             'query_used': enhanced_query,
             'num_results': len(results),
-            'results': results,
-            'text_cleaned': clean_text and gemini_model is not None
+            'text_cleaned': gemini_model is not None and clean_text,
+            'results': results
         })
     
     except Exception as e:
@@ -455,7 +389,7 @@ def get_stats():
                 'total_documents': count,
                 'embedding_model': 'abhinand/MedEmbed-large-v0.1',
                 'search_engine': 'Elasticsearch',
-                'text_cleaning': 'Gemini 2.5 Pro' if gemini_model else 'Disabled'
+                'text_cleaning': gemini_model is not None
             }
         })
     
@@ -469,7 +403,7 @@ def get_stats():
 
 # Initialize on startup (for gunicorn with --preload)
 logger.info("="*60)
-logger.info("🏥 Medical Textbook Retrieval API - Enhanced with Gemini")
+logger.info("🏥 Medical Textbook Retrieval API - Starting")
 logger.info("="*60)
 
 if not initialize_search_engine():
