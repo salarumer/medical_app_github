@@ -19,250 +19,315 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
         .header {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-bottom: 30px;
             text-align: center;
+            color: white;
+            margin-bottom: 40px;
         }
 
         .header h1 {
-            color: #667eea;
+            font-size: 2.5em;
             margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
 
-        .status {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
+        .header-subtitle {
+            font-size: 1.2em;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 10px;
         }
 
-        .status.connected {
-            background: #10b981;
-            color: white;
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+            flex-wrap: wrap;
         }
 
-        .status.disconnected {
-            background: #ef4444;
-            color: white;
-        }
-
-        .search-box {
-            background: white;
-            padding: 30px;
+        .stat-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 20px 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: white;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.9);
+            margin-top: 5px;
+        }
+
+        .search-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             margin-bottom: 30px;
         }
 
-        .input-group {
-            margin-bottom: 20px;
+        .search-card h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.5em;
+            text-align: center;
         }
 
-        .input-group label {
+        .enhanced-badge-title {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #374151;
-            font-weight: 600;
+            color: #333;
+            font-weight: 500;
+            font-size: 1em;
         }
 
-        .input-group input,
-        .input-group textarea {
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group textarea {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s;
+            font-family: inherit;
         }
 
-        .input-group input:focus,
-        .input-group textarea:focus {
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
             outline: none;
             border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .input-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .input-row {
+        .checkbox-group {
             display: flex;
-            gap: 15px;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
         }
 
-        .input-row .input-group {
-            flex: 1;
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
         }
 
-        button {
+        .checkbox-group label {
+            cursor: pointer;
+            font-size: 1em;
+            color: #555;
+            margin: 0;
+        }
+
+        .search-button {
+            width: 100%;
+            padding: 15px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 12px 30px;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: 10px;
+            font-size: 1.1em;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        button:hover {
+        .search-button:hover {
             transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
         }
 
-        button:disabled {
-            background: #9ca3af;
+        .search-button:active {
+            transform: translateY(0);
+        }
+
+        .search-button:disabled {
+            opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+        }
+
+        .results-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .results-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .results-header h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .results-meta {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .result-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .rank-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .score-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .enhanced-badge {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .cleaned-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .result-content {
+            color: #333;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .result-source {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .source-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .source-item strong {
+            color: #333;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #c62828;
         }
 
         .loading {
             text-align: center;
             padding: 40px;
-            color: white;
-            font-size: 18px;
-        }
-
-        .results {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .results h2 {
-            color: #374151;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e5e7eb;
-        }
-
-        .result-item {
-            background: #f9fafb;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border-left: 4px solid #667eea;
-        }
-
-        .result-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .result-rank {
-            background: #667eea;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .result-score {
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        .result-source {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .source-title {
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-
-        .source-detail {
-            color: #6b7280;
-            font-size: 14px;
-            margin: 3px 0;
-        }
-
-        .result-content {
-            color: #374151;
-            line-height: 1.6;
-            padding: 10px;
-            background: white;
-            border-radius: 8px;
-        }
-
-        .error {
-            background: #fee2e2;
-            color: #dc2626;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-
-        .empty {
-            text-align: center;
-            padding: 40px;
-            color: #9ca3af;
-        }
-
-        .stats {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 15px;
-            background: #f9fafb;
-            border-radius: 8px;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 700;
             color: #667eea;
         }
 
-        .stat-label {
-            font-size: 14px;
-            color: #6b7280;
-            margin-top: 5px;
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
         }
 
-        .mode-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-left: 10px;
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
         }
 
-        .mode-badge.enhanced {
-            background: #10b981;
-            color: white;
+        .hidden {
+            display: none;
         }
 
-        .mode-badge.simple {
-            background: #3b82f6;
-            color: white;
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .search-card,
+            .results-container {
+                padding: 25px;
+            }
+
+            .stats {
+                gap: 20px;
+            }
         }
     </style>
 </head>
@@ -270,288 +335,214 @@
     <div class="container">
         <div class="header">
             <h1>🏥 Medical Textbook Search</h1>
-            <p style="color: #6b7280; margin: 10px 0;">Semantic search across emergency medicine textbooks</p>
-            <span class="status disconnected" id="status">Checking connection...</span>
+            <div class="header-subtitle">Enhanced Q+A+E Search 🔥</div>
+            <div class="stats" id="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="docCount">-</div>
+                    <div class="stat-label">Documents</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="textbookCount">-</div>
+                    <div class="stat-label">Textbooks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="modelName">-</div>
+                    <div class="stat-label">Embedding Model</div>
+                </div>
+            </div>
         </div>
 
-        <div class="stats" id="stats" style="display: none;">
-            <div class="stat-item">
-                <div class="stat-value" id="stat-docs">-</div>
-                <div class="stat-label">Documents</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="stat-books">-</div>
-                <div class="stat-label">Textbooks</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="stat-model">-</div>
-                <div class="stat-label">Embedding Model</div>
-            </div>
-        </div>
+        <div class="search-card">
+            <h2>Search with Question + Answer + Explanation</h2>
 
-        <div class="search-box">
-            <h2 style="margin-bottom: 20px; color: #374151;">Search Mode</h2>
-            
-            <div style="margin-bottom: 20px;">
-                <label style="margin-right: 20px;">
-                    <input type="radio" name="searchMode" value="simple" checked onchange="toggleSearchMode()"> 
-                    Simple Search
-                </label>
-                <label style="margin-right: 20px;">
-                    <input type="radio" name="searchMode" value="enhanced" onchange="toggleSearchMode()"> 
-                    Enhanced (Q+A+E) 🔥
-                </label>
-                <label>
-                    <input type="radio" name="searchMode" value="qa" onchange="toggleSearchMode()"> 
-                    Question & Answer
-                </label>
-            </div>
-
-            <!-- Simple Search -->
-            <div id="simpleSearch">
-                <div class="input-group">
-                    <label for="query">Search Query</label>
-                    <textarea id="query" placeholder="Enter your medical question here..."></textarea>
+            <form id="searchForm">
+                <div class="form-group">
+                    <label for="question">Question *</label>
+                    <textarea id="question" placeholder="Enter your medical question..." rows="3" required></textarea>
                 </div>
-            </div>
-
-            <!-- Enhanced Search (Q+A+E) -->
-            <div id="enhancedSearch" style="display: none;">
-                <div class="input-group">
-                    <label for="question-enhanced">Question</label>
-                    <textarea id="question-enhanced" placeholder="Enter the exam question..."></textarea>
-                </div>
-                <div class="input-group">
-                    <label for="answer-enhanced">Answer</label>
-                    <textarea id="answer-enhanced" placeholder="Enter the correct answer..."></textarea>
-                </div>
-                <div class="input-group">
-                    <label for="explanation-enhanced">Explanation</label>
-                    <textarea id="explanation-enhanced" placeholder="Enter the explanation for why this is the correct answer..."></textarea>
-                </div>
-            </div>
-
-            <!-- Q&A Search -->
-            <div id="qaSearch" style="display: none;">
-                <div class="input-group">
-                    <label for="question">Question</label>
-                    <textarea id="question" placeholder="Enter the medical question..."></textarea>
-                </div>
-                <div class="input-group">
+                
+                <div class="form-group">
                     <label for="answer">Answer (Optional)</label>
-                    <input type="text" id="answer" placeholder="Enter the answer if available...">
+                    <input type="text" id="answer" placeholder="Enter the answer...">
                 </div>
-            </div>
+                
+                <div class="form-group">
+                    <label for="explanation">Explanation (Optional)</label>
+                    <textarea id="explanation" placeholder="Enter detailed explanation..." rows="3"></textarea>
+                </div>
 
-            <div class="input-row">
-                <div class="input-group">
+                <div class="form-group">
                     <label for="topK">Number of Results</label>
-                    <input type="number" id="topK" value="5" min="1" max="20">
+                    <input type="number" id="topK" min="1" max="20" value="5">
                 </div>
-            </div>
 
-            <button onclick="performSearch()" id="searchBtn">🔍 Search</button>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="cleanText" checked>
+                    <label for="cleanText">✨ Clean text with AI</label>
+                </div>
+
+                <button type="submit" class="search-button" id="searchButton">
+                    🔍 Search
+                </button>
+            </form>
         </div>
 
-        <div id="loading" class="loading" style="display: none;">
-            <p>🔄 Searching textbooks...</p>
-        </div>
-
-        <div id="results" style="display: none;"></div>
+        <div id="results" class="results-container hidden"></div>
     </div>
 
     <script>
         const API_URL = 'https://medical-rag-api-807836725103.us-central1.run.app';
 
-        // Check API connection on load
-        async function checkConnection() {
+        // Load statistics on page load
+        async function loadStats() {
             try {
                 const response = await fetch(`${API_URL}/`);
                 const data = await response.json();
                 
                 if (data.status === 'healthy') {
-                    document.getElementById('status').textContent = '✓ Connected';
-                    document.getElementById('status').className = 'status connected';
-                    
-                    // Show stats
-                    document.getElementById('stats').style.display = 'grid';
-                    document.getElementById('stat-docs').textContent = data.statistics.total_documents;
-                    document.getElementById('stat-books').textContent = '2';
-                    document.getElementById('stat-model').textContent = 'MedEmbed';
+                    document.getElementById('docCount').textContent = 
+                        data.statistics.total_documents.toLocaleString();
+                    document.getElementById('textbookCount').textContent = '2';
+                    document.getElementById('modelName').textContent = 'MedEmbed';
                 }
             } catch (error) {
-                document.getElementById('status').textContent = '✗ API Not Running';
-                document.getElementById('status').className = 'status disconnected';
+                console.error('Error loading stats:', error);
+                document.getElementById('docCount').textContent = '74234';
+                document.getElementById('textbookCount').textContent = '2';
+                document.getElementById('modelName').textContent = 'MedEmbed';
             }
         }
 
-        function toggleSearchMode() {
-            const mode = document.querySelector('input[name="searchMode"]:checked').value;
-            
-            document.getElementById('simpleSearch').style.display = 'none';
-            document.getElementById('enhancedSearch').style.display = 'none';
-            document.getElementById('qaSearch').style.display = 'none';
-            
-            if (mode === 'simple') {
-                document.getElementById('simpleSearch').style.display = 'block';
-            } else if (mode === 'enhanced') {
-                document.getElementById('enhancedSearch').style.display = 'block';
-            } else {
-                document.getElementById('qaSearch').style.display = 'block';
+        // Check connection on page load
+        async function checkConnection() {
+            try {
+                const response = await fetch(`${API_URL}/`);
+                if (!response.ok) {
+                    displayError('Unable to connect to the search service. Please try again later.');
+                }
+            } catch (error) {
+                console.error('Connection error:', error);
+                displayError('Unable to connect to the search service. Please check your internet connection.');
             }
         }
 
-        async function performSearch() {
-            const mode = document.querySelector('input[name="searchMode"]:checked').value;
+        // Handle form submission
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const question = document.getElementById('question').value.trim();
+            const answer = document.getElementById('answer').value.trim();
+            const explanation = document.getElementById('explanation').value.trim();
             const topK = parseInt(document.getElementById('topK').value);
-            
-            let endpoint, payload;
-            
-            if (mode === 'simple') {
-                const query = document.getElementById('query').value.trim();
-                if (!query) {
-                    alert('Please enter a search query');
-                    return;
-                }
-                endpoint = '/search';
-                payload = { query, top_k: topK };
-            } else if (mode === 'enhanced') {
-                const question = document.getElementById('question-enhanced').value.trim();
-                const answer = document.getElementById('answer-enhanced').value.trim();
-                const explanation = document.getElementById('explanation-enhanced').value.trim();
-                
-                if (!question) {
-                    alert('Please enter a question');
-                    return;
-                }
-                
-                endpoint = '/search/enhanced';
-                payload = { 
-                    question, 
-                    answer, 
-                    explanation, 
-                    top_k: topK 
-                };
-            } else {
-                const question = document.getElementById('question').value.trim();
-                if (!question) {
-                    alert('Please enter a question');
-                    return;
-                }
-                const answer = document.getElementById('answer').value.trim();
-                endpoint = '/search/qa';
-                payload = { question, answer, top_k: topK };
+            const cleanText = document.getElementById('cleanText').checked;
+            const button = document.getElementById('searchButton');
+            const resultsDiv = document.getElementById('results');
+
+            if (!question) {
+                alert('Please enter a question');
+                return;
             }
 
-            // Show loading
-            document.getElementById('searchBtn').disabled = true;
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('results').style.display = 'none';
+            // Prepare request
+            const requestBody = {
+                question: question,
+                answer: answer,
+                explanation: explanation,
+                top_k: topK,
+                clean_text: cleanText
+            };
+
+            // Show loading state
+            button.disabled = true;
+            button.textContent = '🔍 Searching...';
+            resultsDiv.classList.remove('hidden');
+            resultsDiv.innerHTML = '<div class="loading">Searching medical textbooks with enhanced Q+A+E</div>';
 
             try {
-                const response = await fetch(`${API_URL}${endpoint}`, {
+                const response = await fetch(`${API_URL}/search/enhanced`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(requestBody)
                 });
 
                 const data = await response.json();
 
                 if (data.status === 'success') {
-                    displayResults(data, mode);
+                    displayResults(data);
                 } else {
-                    displayError(data.message);
+                    displayError(data.message || 'Search failed');
                 }
             } catch (error) {
-                displayError('Failed to connect to API: ' + error.message);
+                console.error('Search error:', error);
+                displayError('Failed to perform search. Please try again.');
             } finally {
-                document.getElementById('searchBtn').disabled = false;
-                document.getElementById('loading').style.display = 'none';
+                button.disabled = false;
+                button.textContent = '🔍 Search';
             }
-        }
+        });
 
-        function displayResults(data, mode) {
+        function displayResults(data) {
             const resultsDiv = document.getElementById('results');
-            resultsDiv.style.display = 'block';
-
-            const results = data.sources || data.results;
-            const query = data.question || data.query;
-
-            let modeBadge = '';
-            if (mode === 'enhanced') {
-                modeBadge = '<span class="mode-badge enhanced">Enhanced Q+A+E Search</span>';
-            } else if (mode === 'simple') {
-                modeBadge = '<span class="mode-badge simple">Simple Search</span>';
-            }
-
-            let html = `
-                <h2>Search Results ${modeBadge}</h2>
-                <p style="color: #6b7280; margin-bottom: 20px;">
-                    Found ${results.length} results for: "<strong>${query}</strong>"
-                </p>
-            `;
-
-            // Show Q+A+E details for enhanced mode
-            if (mode === 'enhanced' && data.answer) {
-                html += `
-                    <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #0ea5e9;">
-                        <div style="margin-bottom: 10px;">
-                            <strong style="color: #0369a1;">📝 Answer:</strong>
-                            <p style="margin: 5px 0; color: #374151;">${data.answer}</p>
-                        </div>
-                        ${data.explanation ? `
-                        <div>
-                            <strong style="color: #0369a1;">💡 Explanation:</strong>
-                            <p style="margin: 5px 0; color: #374151;">${data.explanation}</p>
-                        </div>
-                        ` : ''}
-                    </div>
-                `;
-            }
-
+            const results = data.results || [];
+            
             if (results.length === 0) {
-                html += '<div class="empty">No results found. Try a different query.</div>';
-            } else {
-                results.forEach(result => {
-                    html += `
-                        <div class="result-item">
-                            <div class="result-header">
-                                <span class="result-rank">Rank #${result.rank}</span>
-                                <span class="result-score">Score: ${result.relevance_score.toFixed(3)}</span>
-                            </div>
-                            
-                            <div class="result-source">
-                                <div class="source-title">📚 ${result.source.textbook}</div>
-                                <div class="source-detail">📖 Chapter: ${result.source.chapter}</div>
-                                <div class="source-detail">📄 Page: ${result.source.page}</div>
-                                <div class="source-detail">📑 Chapter Range: Pages ${result.source.chapter_range}</div>
-                            </div>
-                            
-                            <div class="result-content">
-                                <strong>Content Preview:</strong><br>
-                                ${result.content_preview}
-                            </div>
-                        </div>
-                    `;
-                });
+                resultsDiv.innerHTML = '<div class="error-message">No results found. Try a different query.</div>';
+                return;
             }
+
+            let html = '<div class="results-header">';
+            html += '<h2>Search Results 🔥</h2>';
+            html += '<div class="results-meta">';
+            html += `Found ${results.length} results for enhanced search`;
+            if (data.question) html += `<br><strong>Question:</strong> ${data.question}`;
+            if (data.answer) html += `<br><strong>Answer:</strong> ${data.answer}`;
+            if (data.explanation) html += `<br><strong>Explanation:</strong> ${data.explanation.substring(0, 200)}${data.explanation.length > 200 ? '...' : ''}`;
+
+            if (data.text_cleaned) {
+                html += '<br><span style="color: #667eea; font-weight: 600;">✨ Text cleaned with AI</span>';
+            }
+            
+            html += '</div></div>';
+
+            results.forEach(result => {
+                html += '<div class="result-item">';
+                html += '<div class="result-header">';
+                html += `<span class="rank-badge">#${result.rank}</span>`;
+                html += `<span class="score-badge">Score: ${(result.relevance_score || 0).toFixed(3)}</span>`;
+                html += '<span class="enhanced-badge">🔥 Enhanced</span>';
+
+                if (result.cleaned) {
+                    html += '<span class="cleaned-badge">✨ AI Cleaned</span>';
+                }
+                
+                html += '</div>';
+                
+                html += `<div class="result-content">${result.full_content || result.content_preview || ''}</div>`;
+                
+                if (result.source) {
+                    html += '<div class="result-source">';
+                    html += `<div class="source-item"><strong>Textbook:</strong> ${result.source.textbook}</div>`;
+                    html += `<div class="source-item"><strong>Chapter:</strong> ${result.source.chapter}</div>`;
+                    html += `<div class="source-item"><strong>Page:</strong> ${result.source.page}</div>`;
+                    html += '</div>';
+                }
+                
+                html += '</div>';
+            });
 
             resultsDiv.innerHTML = html;
         }
 
         function displayError(message) {
             const resultsDiv = document.getElementById('results');
-            resultsDiv.style.display = 'block';
-            resultsDiv.innerHTML = `
-                <div class="error">
-                    <strong>Error:</strong> ${message}
-                </div>
-            `;
+            resultsDiv.classList.remove('hidden');
+            resultsDiv.innerHTML = `<div class="error-message">❌ ${message}</div>`;
         }
 
-        // Check connection on page load
+        // Initialize
+        loadStats();
         checkConnection();
     </script>
 </body>
