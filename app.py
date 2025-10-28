@@ -1,6 +1,7 @@
 """
 Flask API for Medical Textbook Retrieval - Cloud Version
 ========================================================
+Multi-Category Support: Emergency Medicine + Gynecology
 """
 
 from flask import Flask, request, jsonify
@@ -31,13 +32,21 @@ es_client = None
 model = None
 gemini_model = None
 
+# Category to index mapping
+CATEGORY_INDEXES = {
+    'emergency': 'textbook_search',
+    'gynecology': 'gynecology_search'
+}
+
 def initialize_search_engine():
     """Initialize connection to Elasticsearch and Gemini"""
     global es_client, model, gemini_model
     
     try:
-        # Get Elasticsearch host from environment or default
-        es_host = os.environ.get('ELASTICSEARCH_HOST', 'http://35.225.123.242:9200')
+        # Get Elasticsearch host from environment
+        es_host = os.environ.get('ELASTICSEARCH_HOST')
+        if not es_host:
+            raise ValueError("ELASTICSEARCH_HOST environment variable is required")
         
         logger.info(f"🔌 Connecting to Elasticsearch at {es_host}")
         
@@ -73,9 +82,13 @@ def initialize_search_engine():
         else:
             logger.warning("⚠️  No GEMINI_API_KEY found - text cleaning disabled")
         
-        # Check index
-        count = es_client.count(index="textbook_search")['count']
-        logger.info(f"📚 Index contains {count} documents")
+        # Check both indexes
+        for category, index_name in CATEGORY_INDEXES.items():
+            if es_client.indices.exists(index=index_name):
+                count = es_client.count(index=index_name)['count']
+                logger.info(f"📚 Index '{index_name}' ({category}): {count} documents")
+            else:
+                logger.warning(f"⚠️  Index '{index_name}' ({category}) does not exist")
         
         return True
         
@@ -108,8 +121,13 @@ Return only the cleaned text without any additional commentary."""
         return text  # Return original on error
 
 
-def search_elasticsearch(query: str, top_k: int = 5, clean_text: bool = True) -> List[Dict[str, Any]]:
+def search_elasticsearch(query: str, top_k: int = 5, clean_text: bool = True, category: str = 'emergency') -> List[Dict[str, Any]]:
     """Search Elasticsearch for relevant documents"""
+    
+    # Get index name for category
+    index_name = CATEGORY_INDEXES.get(category, 'textbook_search')
+    
+    logger.info(f"🔍 Searching in index: {index_name} (category: {category})")
     
     # Generate query embedding
     query_embedding = model.encode([query])[0]
@@ -129,7 +147,7 @@ def search_elasticsearch(query: str, top_k: int = 5, clean_text: bool = True) ->
     }
     
     # Execute search
-    response = es_client.search(index="textbook_search", body=es_query)
+    response = es_client.search(index=index_name, body=es_query)
     
     # Format results
     results = []
@@ -155,6 +173,7 @@ def search_elasticsearch(query: str, top_k: int = 5, clean_text: bool = True) ->
             'full_content': full_content,
             'original_content': original_content,  # Keep original for reference
             'cleaned': clean_text and gemini_model is not None,
+            'category': category,  # NEW: Include category
             'source': {
                 'textbook': metadata.get('textbook', 'Unknown'),
                 'textbook_id': metadata.get('textbook_id', 'unknown'),
@@ -179,17 +198,27 @@ def home():
         }), 500
     
     try:
-        count = es_client.count(index="textbook_search")['count']
+        # Get counts for all indexes
+        indexes_stats = {}
+        for category, index_name in CATEGORY_INDEXES.items():
+            if es_client.indices.exists(index=index_name):
+                count = es_client.count(index=index_name)['count']
+                indexes_stats[category] = {
+                    'index': index_name,
+                    'documents': count
+                }
         
         return jsonify({
             'status': 'healthy',
             'message': 'Medical Textbook Retrieval API',
-            'version': '1.0.0',
+            'version': '2.0.0',  # Updated version
             'features': {
-                'text_cleaning': gemini_model is not None
+                'text_cleaning': gemini_model is not None,
+                'multi_category': True,
+                'categories': list(CATEGORY_INDEXES.keys())
             },
             'statistics': {
-                'total_documents': count,
+                'indexes': indexes_stats,
                 'embedding_model': 'abhinand/MedEmbed-large-v0.1'
             }
         })
@@ -221,7 +250,15 @@ def search():
         
         query = data['query']
         top_k = data.get('top_k', 5)
-        clean_text = data.get('clean_text', True)  # Enable cleaning by default
+        clean_text = data.get('clean_text', True)
+        category = data.get('category', 'emergency')  # NEW: Get category
+        
+        # Validate category
+        if category not in CATEGORY_INDEXES:
+            return jsonify({
+                'status': 'error',
+                'message': f'Invalid category. Must be one of: {list(CATEGORY_INDEXES.keys())}'
+            }), 400
         
         if not query or not query.strip():
             return jsonify({
@@ -235,15 +272,16 @@ def search():
                 'message': 'top_k must be an integer between 1 and 20'
             }), 400
         
-        logger.info(f"🔍 Searching for: '{query}' (top_k={top_k}, clean={clean_text})")
+        logger.info(f"🔍 Searching for: '{query}' (category={category}, top_k={top_k}, clean={clean_text})")
         
-        results = search_elasticsearch(query, top_k, clean_text)
+        results = search_elasticsearch(query, top_k, clean_text, category)
         
-        logger.info(f"✅ Found {len(results)} results")
+        logger.info(f"✅ Found {len(results)} results in {category}")
         
         return jsonify({
             'status': 'success',
             'query': query,
+            'category': category,
             'num_results': len(results),
             'text_cleaned': gemini_model is not None and clean_text,
             'results': results
@@ -280,6 +318,14 @@ def search_enhanced():
         explanation = data.get('explanation', '')
         top_k = data.get('top_k', 5)
         clean_text = data.get('clean_text', True)
+        category = data.get('category', 'emergency')  # NEW: Get category
+        
+        # Validate category
+        if category not in CATEGORY_INDEXES:
+            return jsonify({
+                'status': 'error',
+                'message': f'Invalid category. Must be one of: {list(CATEGORY_INDEXES.keys())}'
+            }), 400
         
         if not question or not question.strip():
             return jsonify({
@@ -306,15 +352,16 @@ def search_enhanced():
         
         enhanced_query = " ".join(query_parts)
         
-        logger.info(f"🔍 Enhanced search (Q+A+E): {len(enhanced_query)} chars, top_k={top_k}, clean={clean_text}")
+        logger.info(f"🔍 Enhanced search (Q+A+E): category={category}, {len(enhanced_query)} chars, top_k={top_k}, clean={clean_text}")
         
-        # Search with enhanced query
-        results = search_elasticsearch(enhanced_query, top_k, clean_text)
+        # Search with enhanced query in selected category
+        results = search_elasticsearch(enhanced_query, top_k, clean_text, category)
         
-        logger.info(f"✅ Found {len(results)} results")
+        logger.info(f"✅ Found {len(results)} results in {category}")
         
         return jsonify({
             'status': 'success',
+            'category': category,
             'question': question,
             'answer': answer if answer else None,
             'explanation': explanation if explanation else None,
@@ -332,9 +379,9 @@ def search_enhanced():
         }), 500
 
 
-@app.route('/textbooks', methods=['GET'])
-def list_textbooks():
-    """Get list of available textbooks"""
+@app.route('/categories', methods=['GET'])
+def list_categories():
+    """Get list of available categories"""
     if es_client is None:
         return jsonify({
             'status': 'error',
@@ -342,6 +389,67 @@ def list_textbooks():
         }), 500
     
     try:
+        categories_info = []
+        for category, index_name in CATEGORY_INDEXES.items():
+            if es_client.indices.exists(index=index_name):
+                count = es_client.count(index=index_name)['count']
+                
+                # Get textbook list for this category
+                query = {
+                    "size": 0,
+                    "aggs": {
+                        "textbooks": {
+                            "terms": {
+                                "field": "metadata.textbook",
+                                "size": 100
+                            }
+                        }
+                    }
+                }
+                response = es_client.search(index=index_name, body=query)
+                textbooks = [bucket['key'] for bucket in response['aggregations']['textbooks']['buckets']]
+                
+                categories_info.append({
+                    'category': category,
+                    'index': index_name,
+                    'documents': count,
+                    'textbooks': textbooks,
+                    'available': True
+                })
+            else:
+                categories_info.append({
+                    'category': category,
+                    'index': index_name,
+                    'available': False
+                })
+        
+        return jsonify({
+            'status': 'success',
+            'categories': categories_info
+        })
+    
+    except Exception as e:
+        logger.error(f"Error listing categories: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+
+@app.route('/textbooks', methods=['GET'])
+def list_textbooks():
+    """Get list of available textbooks (for backward compatibility)"""
+    if es_client is None:
+        return jsonify({
+            'status': 'error',
+            'message': 'Search engine not initialized'
+        }), 500
+    
+    try:
+        # Default to emergency medicine for backward compatibility
+        category = request.args.get('category', 'emergency')
+        index_name = CATEGORY_INDEXES.get(category, 'textbook_search')
+        
         query = {
             "size": 0,
             "aggs": {
@@ -354,11 +462,12 @@ def list_textbooks():
             }
         }
         
-        response = es_client.search(index="textbook_search", body=query)
+        response = es_client.search(index=index_name, body=query)
         textbooks = [bucket['key'] for bucket in response['aggregations']['textbooks']['buckets']]
         
         return jsonify({
             'status': 'success',
+            'category': category,
             'total_textbooks': len(textbooks),
             'textbooks': textbooks
         })
@@ -381,12 +490,23 @@ def get_stats():
         }), 500
     
     try:
-        count = es_client.count(index="textbook_search")['count']
+        stats_by_category = {}
+        total_documents = 0
+        
+        for category, index_name in CATEGORY_INDEXES.items():
+            if es_client.indices.exists(index=index_name):
+                count = es_client.count(index=index_name)['count']
+                stats_by_category[category] = {
+                    'index': index_name,
+                    'documents': count
+                }
+                total_documents += count
         
         return jsonify({
             'status': 'success',
             'statistics': {
-                'total_documents': count,
+                'total_documents': total_documents,
+                'categories': stats_by_category,
                 'embedding_model': 'abhinand/MedEmbed-large-v0.1',
                 'search_engine': 'Elasticsearch',
                 'text_cleaning': gemini_model is not None
@@ -404,6 +524,7 @@ def get_stats():
 # Initialize on startup (for gunicorn with --preload)
 logger.info("="*60)
 logger.info("🏥 Medical Textbook Retrieval API - Starting")
+logger.info("🔥 Multi-Category Support: Emergency + Gynecology")
 logger.info("="*60)
 
 if not initialize_search_engine():
