@@ -10,37 +10,31 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
         }
-
         .header {
             text-align: center;
             color: white;
             margin-bottom: 40px;
         }
-
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
-
         .header-subtitle {
             font-size: 1.2em;
             color: rgba(255, 255, 255, 0.9);
             margin-top: 10px;
-        }
-
+        } 
         .stats {
             display: flex;
             justify-content: center;
@@ -48,7 +42,6 @@
             margin-top: 20px;
             flex-wrap: wrap;
         }
-
         .stat-card {
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
@@ -56,19 +49,16 @@
             border-radius: 15px;
             text-align: center;
         }
-
         .stat-number {
             font-size: 2em;
             font-weight: bold;
             color: white;
         }
-
         .stat-label {
             font-size: 0.9em;
             color: rgba(255, 255, 255, 0.9);
             margin-top: 5px;
         }
-
         .search-card {
             background: white;
             border-radius: 20px;
@@ -76,14 +66,57 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             margin-bottom: 30px;
         }
-
         .search-card h2 {
             color: #333;
             margin-bottom: 25px;
             font-size: 1.5em;
             text-align: center;
         }
-
+        
+        /* NEW: Category Selector Styles */
+        .category-selector {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+        .category-selector h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        .category-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .category-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .category-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        .category-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+        
         .enhanced-badge-title {
             display: inline-block;
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
@@ -94,11 +127,9 @@
             font-size: 0.9em;
             margin-left: 10px;
         }
-
         .form-group {
             margin-bottom: 25px;
         }
-
         .form-group label {
             display: block;
             margin-bottom: 8px;
@@ -106,7 +137,6 @@
             font-weight: 500;
             font-size: 1em;
         }
-
         .form-group input[type="text"],
         .form-group input[type="number"],
         .form-group textarea {
@@ -118,39 +148,33 @@
             transition: all 0.3s;
             font-family: inherit;
         }
-
         .form-group textarea {
             resize: vertical;
             min-height: 80px;
         }
-
         .form-group input:focus,
         .form-group textarea:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
-
         .checkbox-group {
             display: flex;
             align-items: center;
             gap: 10px;
             margin-bottom: 25px;
         }
-
         .checkbox-group input[type="checkbox"] {
             width: 20px;
             height: 20px;
             cursor: pointer;
         }
-
         .checkbox-group label {
             cursor: pointer;
             font-size: 1em;
             color: #555;
             margin: 0;
         }
-
         .search-button {
             width: 100%;
             padding: 15px;
@@ -163,22 +187,18 @@
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
         }
-
         .search-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
         }
-
         .search-button:active {
             transform: translateY(0);
         }
-
         .search-button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }
-
         .results-container {
             background: white;
             border-radius: 20px;
@@ -191,17 +211,33 @@
             padding-bottom: 20px;
             border-bottom: 2px solid #f0f0f0;
         }
-
         .results-header h2 {
             color: #333;
             margin-bottom: 10px;
         }
-
         .results-meta {
             color: #666;
             font-size: 0.95em;
         }
-
+        
+        /* NEW: Category Badge */
+        .category-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+        .category-badge.emergency {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+        .category-badge.gynecology {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
         .result-item {
             background: #f8f9fa;
             border-radius: 15px;
@@ -210,12 +246,10 @@
             border-left: 4px solid #667eea;
             transition: transform 0.2s, box-shadow 0.2s;
         }
-
         .result-item:hover {
             transform: translateX(5px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-
         .result-header {
             display: flex;
             align-items: center;
@@ -223,7 +257,6 @@
             margin-bottom: 15px;
             flex-wrap: wrap;
         }
-
         .rank-badge {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -232,7 +265,6 @@
             font-weight: 600;
             font-size: 0.9em;
         }
-
         .score-badge {
             background: #e8f5e9;
             color: #2e7d32;
@@ -241,7 +273,6 @@
             font-weight: 600;
             font-size: 0.9em;
         }
-
         .enhanced-badge {
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
             color: white;
@@ -250,7 +281,6 @@
             font-weight: 600;
             font-size: 0.9em;
         }
-
         .cleaned-badge {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -259,13 +289,11 @@
             font-weight: 600;
             font-size: 0.9em;
         }
-
         .result-content {
             color: #333;
             line-height: 1.8;
             margin-bottom: 15px;
         }
-
         .result-source {
             display: flex;
             flex-wrap: wrap;
@@ -275,17 +303,14 @@
             font-size: 0.9em;
             color: #666;
         }
-
         .source-item {
             display: flex;
             align-items: center;
             gap: 5px;
-        }
-
+        } 
         .source-item strong {
             color: #333;
         }
-
         .error-message {
             background: #ffebee;
             color: #c62828;
@@ -293,40 +318,36 @@
             border-radius: 10px;
             border-left: 4px solid #c62828;
         }
-
         .loading {
             text-align: center;
             padding: 40px;
             color: #667eea;
         }
-
         .loading::after {
             content: '...';
             animation: dots 1.5s steps(4, end) infinite;
         }
-
         @keyframes dots {
             0%, 20% { content: '.'; }
             40% { content: '..'; }
             60%, 100% { content: '...'; }
         }
-
         .hidden {
             display: none;
         }
-
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 1.8em;
             }
-
             .search-card,
             .results-container {
                 padding: 25px;
             }
-
             .stats {
                 gap: 20px;
+            }
+            .category-btn {
+                min-width: 150px;
             }
         }
     </style>
@@ -335,26 +356,38 @@
     <div class="container">
         <div class="header">
             <h1>🏥 Medical Textbook Search</h1>
-            <div class="header-subtitle">Enhanced Q+A+E Search 🔥</div>
+            <div class="header-subtitle">Multi-Category RAG System 🔥</div>
             <div class="stats" id="stats">
                 <div class="stat-card">
-                    <div class="stat-number" id="docCount">-</div>
-                    <div class="stat-label">Documents</div>
+                    <div class="stat-number" id="totalDocs">-</div>
+                    <div class="stat-label">Total Documents</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="textbookCount">-</div>
-                    <div class="stat-label">Textbooks</div>
+                    <div class="stat-number" id="emergencyDocs">-</div>
+                    <div class="stat-label">Emergency Medicine</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="modelName">-</div>
-                    <div class="stat-label">Embedding Model</div>
+                    <div class="stat-number" id="gynecologyDocs">-</div>
+                    <div class="stat-label">Gynecology</div>
                 </div>
             </div>
         </div>
-
         <div class="search-card">
-            <h2>Search with Question + Answer + Explanation</h2>
-
+            <h2>Enhanced Q+A+E Search</h2>
+            
+            <!-- NEW: Category Selector -->
+            <div class="category-selector">
+                <h3>Select Category</h3>
+                <div class="category-options">
+                    <button type="button" class="category-btn active" data-category="emergency" id="emergencyBtn">
+                        🚑 Emergency Medicine
+                    </button>
+                    <button type="button" class="category-btn" data-category="gynecology" id="gynecologyBtn">
+                        🔬 Gynecology
+                    </button>
+                </div>
+            </div>
+            
             <form id="searchForm">
                 <div class="form-group">
                     <label for="question">Question *</label>
@@ -370,29 +403,41 @@
                     <label for="explanation">Explanation (Optional)</label>
                     <textarea id="explanation" placeholder="Enter detailed explanation..." rows="3"></textarea>
                 </div>
-
                 <div class="form-group">
                     <label for="topK">Number of Results</label>
                     <input type="number" id="topK" min="1" max="20" value="5">
                 </div>
-
                 <div class="checkbox-group">
                     <input type="checkbox" id="cleanText" checked>
                     <label for="cleanText">✨ Clean text with AI</label>
                 </div>
-
                 <button type="submit" class="search-button" id="searchButton">
                     🔍 Search
                 </button>
             </form>
         </div>
-
         <div id="results" class="results-container hidden"></div>
     </div>
-
     <script>
         const API_URL = 'https://medical-rag-api-807836725103.us-central1.run.app';
-
+        let selectedCategory = 'emergency'; // NEW: Track selected category
+        
+        // NEW: Category button handlers
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Remove active class from all buttons
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                
+                // Add active class to clicked button
+                e.target.classList.add('active');
+                
+                // Update selected category
+                selectedCategory = e.target.dataset.category;
+                
+                console.log('Selected category:', selectedCategory);
+            });
+        });
+        
         // Load statistics on page load
         async function loadStats() {
             try {
@@ -400,16 +445,31 @@
                 const data = await response.json();
                 
                 if (data.status === 'healthy') {
-                    document.getElementById('docCount').textContent = 
-                        data.statistics.total_documents.toLocaleString();
-                    document.getElementById('textbookCount').textContent = '2';
-                    document.getElementById('modelName').textContent = 'MedEmbed';
+                    const stats = data.statistics.indexes;
+                    
+                    let totalDocs = 0;
+                    let emergencyDocs = 0;
+                    let gynecologyDocs = 0;
+                    
+                    if (stats.emergency) {
+                        emergencyDocs = stats.emergency.documents;
+                        totalDocs += emergencyDocs;
+                    }
+                    
+                    if (stats.gynecology) {
+                        gynecologyDocs = stats.gynecology.documents;
+                        totalDocs += gynecologyDocs;
+                    }
+                    
+                    document.getElementById('totalDocs').textContent = totalDocs.toLocaleString();
+                    document.getElementById('emergencyDocs').textContent = emergencyDocs.toLocaleString();
+                    document.getElementById('gynecologyDocs').textContent = gynecologyDocs.toLocaleString();
                 }
             } catch (error) {
                 console.error('Error loading stats:', error);
-                document.getElementById('docCount').textContent = '74234';
-                document.getElementById('textbookCount').textContent = '2';
-                document.getElementById('modelName').textContent = 'MedEmbed';
+                document.getElementById('totalDocs').textContent = '113,407';
+                document.getElementById('emergencyDocs').textContent = '74,234';
+                document.getElementById('gynecologyDocs').textContent = '39,173';
             }
         }
 
@@ -425,39 +485,40 @@
                 displayError('Unable to connect to the search service. Please check your internet connection.');
             }
         }
-
+        
         // Handle form submission
         document.getElementById('searchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const question = document.getElementById('question').value.trim();
             const answer = document.getElementById('answer').value.trim();
             const explanation = document.getElementById('explanation').value.trim();
             const topK = parseInt(document.getElementById('topK').value);
-            const cleanText = document.getElementById('cleanText').checked;
+            const cleanText = document.getElementById('cleanText').checked();
             const button = document.getElementById('searchButton');
             const resultsDiv = document.getElementById('results');
-
+            
             if (!question) {
                 alert('Please enter a question');
                 return;
             }
-
+            
             // Prepare request
             const requestBody = {
                 question: question,
                 answer: answer,
                 explanation: explanation,
                 top_k: topK,
-                clean_text: cleanText
+                clean_text: cleanText,
+                category: selectedCategory  // NEW: Include selected category
             };
-
+            
             // Show loading state
             button.disabled = true;
-            button.textContent = '🔍 Searching...';
+            const categoryName = selectedCategory === 'emergency' ? 'Emergency Medicine' : 'Gynecology';
+            button.textContent = `🔍 Searching ${categoryName}...`;
             resultsDiv.classList.remove('hidden');
-            resultsDiv.innerHTML = '<div class="loading">Searching medical textbooks with enhanced Q+A+E</div>';
-
+            resultsDiv.innerHTML = `<div class="loading">Searching ${categoryName} textbooks with enhanced Q+A+E</div>`;
+            
             try {
                 const response = await fetch(`${API_URL}/search/enhanced`, {
                     method: 'POST',
@@ -466,9 +527,7 @@
                     },
                     body: JSON.stringify(requestBody)
                 });
-
                 const data = await response.json();
-
                 if (data.status === 'success') {
                     displayResults(data);
                 } else {
@@ -482,7 +541,7 @@
                 button.textContent = '🔍 Search';
             }
         });
-
+        
         function displayResults(data) {
             const resultsDiv = document.getElementById('results');
             const results = data.results || [];
@@ -490,29 +549,29 @@
             if (results.length === 0) {
                 resultsDiv.innerHTML = '<div class="error-message">No results found. Try a different query.</div>';
                 return;
-            }
-
+            } 
+            
+            const categoryName = data.category === 'emergency' ? 'Emergency Medicine' : 'Gynecology';
+            const categoryClass = data.category;
+            
             let html = '<div class="results-header">';
-            html += '<h2>Search Results 🔥</h2>';
+            html += '<h2>Search Results 🔥 <span class="category-badge ' + categoryClass + '">' + categoryName + '</span></h2>';
             html += '<div class="results-meta">';
-            html += `Found ${results.length} results for enhanced search`;
+            html += `Found ${results.length} results`;
             if (data.question) html += `<br><strong>Question:</strong> ${data.question}`;
             if (data.answer) html += `<br><strong>Answer:</strong> ${data.answer}`;
             if (data.explanation) html += `<br><strong>Explanation:</strong> ${data.explanation.substring(0, 200)}${data.explanation.length > 200 ? '...' : ''}`;
-
             if (data.text_cleaned) {
                 html += '<br><span style="color: #667eea; font-weight: 600;">✨ Text cleaned with AI</span>';
             }
             
             html += '</div></div>';
-
             results.forEach(result => {
                 html += '<div class="result-item">';
                 html += '<div class="result-header">';
                 html += `<span class="rank-badge">#${result.rank}</span>`;
                 html += `<span class="score-badge">Score: ${(result.relevance_score || 0).toFixed(3)}</span>`;
                 html += '<span class="enhanced-badge">🔥 Enhanced</span>';
-
                 if (result.cleaned) {
                     html += '<span class="cleaned-badge">✨ AI Cleaned</span>';
                 }
@@ -531,16 +590,15 @@
                 
                 html += '</div>';
             });
-
             resultsDiv.innerHTML = html;
         }
-
+        
         function displayError(message) {
             const resultsDiv = document.getElementById('results');
             resultsDiv.classList.remove('hidden');
             resultsDiv.innerHTML = `<div class="error-message">❌ ${message}</div>`;
         }
-
+        
         // Initialize
         loadStats();
         checkConnection();
