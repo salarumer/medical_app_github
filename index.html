@@ -34,7 +34,7 @@
             font-size: 1.2em;
             color: rgba(255, 255, 255, 0.9);
             margin-top: 10px;
-        } 
+        }
         .stats {
             display: flex;
             justify-content: center;
@@ -73,7 +73,7 @@
             text-align: center;
         }
         
-        /* NEW: Category Selector Styles */
+        /* Category Selector */
         .category-selector {
             margin-bottom: 30px;
             padding: 20px;
@@ -205,7 +205,6 @@
             padding: 40px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-
         .results-header {
             margin-bottom: 30px;
             padding-bottom: 20px;
@@ -220,7 +219,7 @@
             font-size: 0.95em;
         }
         
-        /* NEW: Category Badge */
+        /* Category Badge */
         .category-badge {
             display: inline-block;
             padding: 5px 12px;
@@ -307,7 +306,7 @@
             display: flex;
             align-items: center;
             gap: 5px;
-        } 
+        }
         .source-item strong {
             color: #333;
         }
@@ -375,7 +374,7 @@
         <div class="search-card">
             <h2>Enhanced Q+A+E Search</h2>
             
-            <!-- NEW: Category Selector -->
+            <!-- Category Selector -->
             <div class="category-selector">
                 <h3>Select Category</h3>
                 <div class="category-options">
@@ -420,9 +419,9 @@
     </div>
     <script>
         const API_URL = 'https://medical-rag-api-807836725103.us-central1.run.app';
-        let selectedCategory = 'emergency'; // NEW: Track selected category
+        let selectedCategory = 'emergency';
         
-        // NEW: Category button handlers
+        // Category button handlers
         document.querySelectorAll('.category-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 // Remove active class from all buttons
@@ -493,7 +492,7 @@
             const answer = document.getElementById('answer').value.trim();
             const explanation = document.getElementById('explanation').value.trim();
             const topK = parseInt(document.getElementById('topK').value);
-            const cleanText = document.getElementById('cleanText').checked();
+            const cleanText = document.getElementById('cleanText').checked;  // FIXED: removed ()
             const button = document.getElementById('searchButton');
             const resultsDiv = document.getElementById('results');
             
@@ -509,7 +508,7 @@
                 explanation: explanation,
                 top_k: topK,
                 clean_text: cleanText,
-                category: selectedCategory  // NEW: Include selected category
+                category: selectedCategory
             };
             
             // Show loading state
@@ -549,7 +548,7 @@
             if (results.length === 0) {
                 resultsDiv.innerHTML = '<div class="error-message">No results found. Try a different query.</div>';
                 return;
-            } 
+            }
             
             const categoryName = data.category === 'emergency' ? 'Emergency Medicine' : 'Gynecology';
             const categoryClass = data.category;
