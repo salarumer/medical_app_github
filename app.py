@@ -132,14 +132,15 @@ def search_elasticsearch(query: str, top_k: int = 5, clean_text: bool = True, ca
     # Generate query embedding
     query_embedding = model.encode([query])[0]
     
-    # Build Elasticsearch query
+    # Build Elasticsearch query - FIXED SCORING
     es_query = {
         "size": top_k,
         "query": {
             "script_score": {
                 "query": {"match_all": {}},
                 "script": {
-                    "source": "Math.max(cosineSimilarity(params.query_vector, 'embedding') + 1.0, 0.001)",
+                    # FIXED: Normalize cosine similarity from [-1,1] to [0,1]
+                    "source": "(cosineSimilarity(params.query_vector, 'embedding') + 1.0) / 2.0",
                     "params": {"query_vector": query_embedding.tolist()}
                 }
             }
