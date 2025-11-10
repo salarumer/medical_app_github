@@ -2,6 +2,7 @@
 Flask API for Medical Textbook Retrieval - Cloud Version
 ========================================================
 Multi-Category Support: Emergency Medicine + Gynecology
+Enhanced with Gemini for encoding fixes and presentable chunks
 """
 
 from flask import Flask, request, jsonify
@@ -98,22 +99,45 @@ def initialize_search_engine():
 
 
 def clean_text_with_gemini(text: str) -> str:
-    """Clean and format text using Gemini API"""
+    """
+    Fix character encoding and make text presentable using Gemini API.
+    Creates proper sentence boundaries for better readability.
+    """
     if not gemini_model:
         return text  # Return original if Gemini not available
     
     try:
-        prompt = f"""Clean and format this medical text for better readability. Remove unnecessary newlines, fix spacing, and make it flow naturally as prose. Keep all medical information intact.
+        prompt = f"""You are fixing a medical textbook excerpt that has two issues:
+1. Character encoding problems (font substitution errors)
+2. Text was split mid-sentence during chunking
 
-Text to clean:
+CRITICAL RULES:
+1. Fix ONLY obvious character encoding errors (e.g., "o" → "of", "Tus" → "Thus", "rst" → "first", "ound" → "found")
+2. DO NOT add, remove, or change any medical information
+3. DO NOT rephrase medical content
+4. Make the text presentable:
+   - If it starts mid-sentence, complete the thought naturally or add "..." at the beginning
+   - If it ends mid-sentence, complete the sentence or add "..." at the end
+   - Ensure proper sentence boundaries
+5. Keep ALL numbers, measurements, and medical terms exactly as written
+6. Remove excessive line breaks and fix spacing to make it flow as prose
+7. If uncertain about a change, leave it as-is
+
+Medical Text:
 {text}
 
-Return only the cleaned text without any additional commentary."""
+Return only the fixed and presentable text with no commentary:"""
 
         response = gemini_model.generate_content(prompt)
         cleaned = response.text.strip()
         
-        logger.info(f"✨ Cleaned text: {len(text)} → {len(cleaned)} chars")
+        # Safety check: reject if changed too much (hallucination protection)
+        length_diff = abs(len(cleaned) - len(text)) / max(len(text), 1)
+        if length_diff > 0.15:  # More than 15% change = suspicious
+            logger.warning(f"⚠️ Gemini changed text too much ({length_diff:.1%}), using original")
+            return text
+        
+        logger.info(f"✨ Cleaned text: {len(text)} → {len(cleaned)} chars (diff: {length_diff:.1%})")
         return cleaned
         
     except Exception as e:
@@ -174,7 +198,7 @@ def search_elasticsearch(query: str, top_k: int = 5, clean_text: bool = True, ca
             'full_content': full_content,
             'original_content': original_content,  # Keep original for reference
             'cleaned': clean_text and gemini_model is not None,
-            'category': category,  # NEW: Include category
+            'category': category,
             'source': {
                 'textbook': metadata.get('textbook', 'Unknown'),
                 'textbook_id': metadata.get('textbook_id', 'unknown'),
@@ -212,9 +236,11 @@ def home():
         return jsonify({
             'status': 'healthy',
             'message': 'Medical Textbook Retrieval API',
-            'version': '2.0.0',  # Updated version
+            'version': '2.1.0',  # Updated version
             'features': {
                 'text_cleaning': gemini_model is not None,
+                'encoding_fix': gemini_model is not None,
+                'presentable_chunks': gemini_model is not None,
                 'multi_category': True,
                 'categories': list(CATEGORY_INDEXES.keys())
             },
@@ -252,7 +278,7 @@ def search():
         query = data['query']
         top_k = data.get('top_k', 5)
         clean_text = data.get('clean_text', True)
-        category = data.get('category', 'emergency')  # NEW: Get category
+        category = data.get('category', 'emergency')
         
         # Validate category
         if category not in CATEGORY_INDEXES:
@@ -319,7 +345,7 @@ def search_enhanced():
         explanation = data.get('explanation', '')
         top_k = data.get('top_k', 5)
         clean_text = data.get('clean_text', True)
-        category = data.get('category', 'emergency')  # NEW: Get category
+        category = data.get('category', 'emergency')
         
         # Validate category
         if category not in CATEGORY_INDEXES:
@@ -401,7 +427,7 @@ def list_categories():
                     "aggs": {
                         "textbooks": {
                             "terms": {
-                                "field": "metadata.textbook",
+                                "field": "metadata.textbook.keyword",
                                 "size": 100
                             }
                         }
@@ -456,7 +482,7 @@ def list_textbooks():
             "aggs": {
                 "textbooks": {
                     "terms": {
-                        "field": "metadata.textbook_id",
+                        "field": "metadata.textbook_id.keyword",
                         "size": 1000
                     }
                 }
@@ -510,7 +536,9 @@ def get_stats():
                 'categories': stats_by_category,
                 'embedding_model': 'abhinand/MedEmbed-large-v0.1',
                 'search_engine': 'Elasticsearch',
-                'text_cleaning': gemini_model is not None
+                'text_cleaning': gemini_model is not None,
+                'encoding_fix': gemini_model is not None,
+                'presentable_chunks': gemini_model is not None
             }
         })
     
@@ -526,6 +554,7 @@ def get_stats():
 logger.info("="*60)
 logger.info("🏥 Medical Textbook Retrieval API - Starting")
 logger.info("🔥 Multi-Category Support: Emergency + Gynecology")
+logger.info("✨ Enhanced with Gemini encoding fix & presentable chunks")
 logger.info("="*60)
 
 if not initialize_search_engine():
